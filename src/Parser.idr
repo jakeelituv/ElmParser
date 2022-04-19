@@ -63,7 +63,7 @@ public export
   pure $ !parseFunc !parseArg
 
 public export
-(|.) : Parser keep -> Parser ignore -> Parser keep
+(|.) : Parser keep -> Parser _ -> Parser keep
 (|.) keepParser ignoreParser =
     [| const keepParser ignoreParser |]
 
@@ -74,7 +74,7 @@ keeper =
   Parser.(|=)
 
 public export
-ignorer : Parser keep -> Parser ignore -> Parser keep
+ignorer : Parser keep -> Parser _ -> Parser keep
 ignorer =
   Parser.(|.)
 
