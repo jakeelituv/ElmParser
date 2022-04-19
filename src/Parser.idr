@@ -37,8 +37,8 @@ record DeadEnd where
 
 public export
 problemToDeadEnd : A.DeadEnd Void Problem -> DeadEnd
-problemToDeadEnd (MkDeadEnd row col problem _)
-  = MkDeadEnd row col problem
+problemToDeadEnd (MkDeadEnd row col problem' _)
+  = MkDeadEnd row col problem'
 
 public export
 run : Parser a -> String -> Either (List DeadEnd) a

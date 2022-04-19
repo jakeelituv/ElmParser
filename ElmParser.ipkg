@@ -13,7 +13,7 @@ authors = "jakeelituv"
 
 depends = contrib
 
-modules = Parser, Pratt, Parser.Advanced, Pratt.Advanced
+modules = Parser, Parser.Utils, Pratt, Parser.Advanced, Pratt.Advanced
 -- modules to install
 
 
