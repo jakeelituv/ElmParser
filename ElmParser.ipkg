@@ -1,6 +1,6 @@
 package ElmParser
 -- version =
-authors = "jake"
+authors = "jakeelituv"
 -- maintainers =
 -- license =
 -- brief =
@@ -13,16 +13,16 @@ authors = "jake"
 
 depends = contrib
 
---modules = HoTT
+modules = Parser, Pratt, Parser.Advanced, Pratt.Advanced
 -- modules to install
 
 
 -- main file (i.e. file to load at REPL)
---main = LambdaCalculus
+--main =
 
 -- name of executable
-executable = "Parser"
--- opts = "--codegen node"
+-- executable = "Parser"
+-- opts =
 sourcedir = "src"
 -- builddir =
 -- outputdir =
