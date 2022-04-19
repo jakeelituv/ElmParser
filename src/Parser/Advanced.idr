@@ -42,11 +42,11 @@ record ParserState ctx where
 %name ParserState pstate
 
 public export
-record DeadEnd ctx prblem where
+record DeadEnd ctx problem' where
   constructor MkDeadEnd
   row : Nat
   col : Nat
-  problem : prblem
+  problem : problem'
   contextStack : List (Located ctx)
 %name DeadEnd deadend
 
@@ -57,15 +57,15 @@ data Bag : (c : Type) -> (x : Type) -> Type where
 %name Bag bag
 
 public export
-data PStep : (ctx : Type) -> (problem : Type) -> (value : Type) -> Type where
-  Bad : (p : Bool) -> (x : Bag ctx problem) -> PStep ctx problem value
-  Good : (p: Bool) -> (a : value) -> (s : ParserState ctx) -> PStep ctx problem value
+data PStep : (ctx : Type) -> (problem' : Type) -> (value : Type) -> Type where
+  Bad : (p : Bool) -> (x : Bag ctx problem') -> PStep ctx problem' value
+  Good : (p: Bool) -> (a : value) -> (s : ParserState ctx) -> PStep ctx problem' value
 %name PStep pstep
 
 
 public export
-data Parser : (ctx : Type) -> (problem : Type) -> (value : Type) -> Type where
-  MkParser : (ParserState ctx -> PStep ctx problem value) -> Parser ctx problem value
+data Parser : (ctx : Type) -> (problem' : Type) -> (value : Type) -> Type where
+  MkParser : (ParserState ctx -> PStep ctx problem' value) -> Parser ctx problem' value
 %name Parser parser
 
 bagToList : Bag c x -> List (DeadEnd c x) -> List (DeadEnd c x)
@@ -152,7 +152,7 @@ public export
   pure $ !parseFunc !parseArg
 
 public export
-(|.) : Parser c x keep -> Parser c x ignore -> Parser c x keep
+(|.) : Parser c x keep -> Parser c x _ -> Parser c x keep
 (|.) keepParser ignoreParser =
     [| const keepParser ignoreParser |]
 
@@ -504,7 +504,7 @@ revAlways : a -> b -> b
 revAlways _ b =
   b
 
-skip : Parser c x ignore -> Parser c x keep -> Parser c x keep
+skip : Parser c x _ -> Parser c x keep -> Parser c x keep
 skip iParser kParser =
   [| revAlways iParser kParser |]
 
