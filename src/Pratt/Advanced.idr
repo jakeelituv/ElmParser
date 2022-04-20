@@ -1,6 +1,7 @@
 module Pratt.Advanced
 
 import Parser.Advanced
+import Parser.Utils
 
 public export
 record Config c x e where

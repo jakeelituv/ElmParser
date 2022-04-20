@@ -1,6 +1,7 @@
 module Parser
 
 import Parser.Advanced as A
+import public Parser.Utils
 
 infixl 0 |>
 infixl 5 |=
@@ -26,7 +27,7 @@ data Problem = Expecting String
 
 public export
 Parser : Type -> Type
-Parser a = A.Parser Void Problem a
+Parser a = Parser Void Problem a
 
 public export
 record DeadEnd where
@@ -36,7 +37,7 @@ record DeadEnd where
   problem : Problem
 
 public export
-problemToDeadEnd : A.DeadEnd Void Problem -> DeadEnd
+problemToDeadEnd : DeadEnd Void Problem -> DeadEnd
 problemToDeadEnd (MkDeadEnd row col problem' _)
   = MkDeadEnd row col problem'
 

@@ -24,50 +24,6 @@ intToNat x = integerToNat (cast x)
 
 
 
-record Located ctx where
-  constructor MkLocated
-  row : Nat
-  col : Nat
-  context : ctx
-%name Located located
-
-record ParserState ctx where
-  constructor MkParserState
-  src : String
-  offset : Int
-  indent : Nat
-  context : List (Located ctx)
-  row : Nat
-  col : Nat
-%name ParserState pstate
-
-public export
-record DeadEnd ctx problem' where
-  constructor MkDeadEnd
-  row : Nat
-  col : Nat
-  problem : problem'
-  contextStack : List (Located ctx)
-%name DeadEnd deadend
-
-data Bag : (c : Type) -> (x : Type) -> Type where
-  Empty : Bag c x
-  AddRight : Bag c x -> DeadEnd c x -> Bag c x
-  Append : Bag c x -> Bag c x -> Bag c x
-%name Bag bag
-
-public export
-data PStep : (ctx : Type) -> (problem' : Type) -> (value : Type) -> Type where
-  Bad : (p : Bool) -> (x : Bag ctx problem') -> PStep ctx problem' value
-  Good : (p: Bool) -> (a : value) -> (s : ParserState ctx) -> PStep ctx problem' value
-%name PStep pstep
-
-
-public export
-data Parser : (ctx : Type) -> (problem' : Type) -> (value : Type) -> Type where
-  MkParser : (ParserState ctx -> PStep ctx problem' value) -> Parser ctx problem' value
-%name Parser parser
-
 bagToList : Bag c x -> List (DeadEnd c x) -> List (DeadEnd c x)
 bagToList Empty xs = xs
 bagToList (AddRight bag x) list = bagToList bag (x :: list)
@@ -104,40 +60,6 @@ problem : x -> Parser c x a
 problem x =
   MkParser $ \s =>
     Bad False (fromState s x)
-
-public export
-Functor (Parser c x) where
-  map func (MkParser parse) =
-    MkParser $ \s0 =>
-          case parse s0 of
-            (Good p a s1) => Good p (func a) s1
-            (Bad p x) => Bad p x
-
-public export
-Applicative (Parser c x) where
-  pure x = MkParser $ \s => Good False x s
-
-  (MkParser parserFunc) <*> (MkParser parserArg) =
-        MkParser $ \s0 =>
-            case parserFunc s0 of
-                (Bad p y) => Bad p y
-                (Good p1 func s1) =>
-                    case parserArg s1 of
-                        (Bad p2 z) => Bad (p1 || p2) z
-                        (Good p2 arg s2) => Good (p1 || p2) (func arg) s2
-
-public export
-Monad (Parser c x) where
-  fa >>= f =
-    let MkParser parserA = fa in
-      MkParser $ \s0 =>
-        case parserA s0 of
-          (Bad p y) => Bad p y
-          (Good p1 a s1) =>
-                  let (MkParser parserB) = f a in
-                          case parserB s1 of
-                              (Bad p2 b) => Bad (p1 || p2) b
-                              (Good p2 b s2) => Good (p1 || p2) b s2
 
 
 
@@ -478,9 +400,6 @@ varHelp isGood offset row col src indent context =
    varHelp isGood (offset + 1) (row + 1) 1 src indent context
  else
    varHelp isGood newOffset row (col + 1) src indent context
-
-public export
-data Trailing = Forbidden | Optional | Mandatory
 
 public export
 record Sequence c x a where
