@@ -1,6 +1,7 @@
 module Parser
-import public Parser.Utils
+
 import Parser.Advanced as A
+import public Parser.Utils
 
 infixl 0 |>
 infixl 5 |=
@@ -25,25 +26,8 @@ data Problem = Expecting String
               | BadRepeat
 
 public export
-data Parser : Type -> Type where
-  Mk : A.Parser Void Problem a -> Parser a
-
-public export
-Functor Parser where
-  map f (Mk parser) = Mk (map f parser)
-
-public export
-Applicative Parser where
-  pure x = Mk (pure x)
-  (Mk parserFunc) <*> (Mk parserArg) = Mk (parserFunc <*> parserArg)
-
-public export
-Monad Parser where
-  (Mk parser) >>= f =
-  Mk $
-    do x <- parser
-       let (Mk y) = f x
-       y
+Parser : Type -> Type
+Parser a = Parser Void Problem a
 
 public export
 record DeadEnd where
@@ -53,13 +37,13 @@ record DeadEnd where
   problem : Problem
 
 public export
-problemToDeadEnd : A.DeadEnd Void Problem -> DeadEnd
+problemToDeadEnd : DeadEnd Void Problem -> DeadEnd
 problemToDeadEnd (MkDeadEnd row col problem' _)
   = MkDeadEnd row col problem'
 
 public export
 run : Parser a -> String -> Either (List DeadEnd) a
-run (Mk parser) source
+run parser source
   = case A.run parser source of
       (Left problems) => Left (map problemToDeadEnd problems)
       (Right x) => Right x
@@ -71,7 +55,8 @@ deadEndsToString deadEnds =
 
 public export
 succeed : a -> Parser a
-succeed x = Mk (A.succeed x)
+succeed =
+  A.succeed
 
 public export
 (|=) : Parser (a -> b) -> Parser a -> Parser b
@@ -97,36 +82,33 @@ ignorer =
 
 public export
 lazy : (() -> Parser a) -> Parser a
-lazy f = let test = A.lazy
-             Mk res = f () in Mk $ test (\x => res)
+lazy =
+  A.lazy
 
 public export
 andThen : (a -> Parser b) -> Parser a -> Parser b
-andThen f x =
-  x >>= f
+andThen =
+  A.andThen
 
 public export
 problem : String -> Parser a
 problem msg =
-  Mk $ A.problem (MkProblem msg)
-
-oneOfHelp : List (Parser a) -> List (Parser Void Problem a)
-oneOfHelp [] = []
-oneOfHelp ((Mk parser) :: xs) = parser :: oneOfHelp xs
+  A.problem (MkProblem msg)
 
 public export
 oneOf : List (Parser a) -> Parser a
-oneOf xs = Mk (A.oneOf (oneOfHelp xs))
-
+oneOf =
+  A.oneOf
 
 public export
 backtrackable : Parser a -> Parser a
-backtrackable (Mk parser) = Mk (A.backtrackable parser)
+backtrackable =
+  A.backtrackable
 
 public export
 commit : a -> Parser a
-commit x =
-  Mk (A.commit x)
+commit =
+  A.commit
 
 public export
 toToken : String -> A.Token Problem
@@ -136,22 +118,22 @@ toToken str =
 public export
 token : String -> Parser ()
 token str =
-  Mk (A.token (toToken str))
+  A.token (toToken str)
 
 public export
 loop : state -> (state -> Parser (Step state a)) -> Parser a
 loop state callback =
-  Mk $ A.loop state (\s => let Mk res = callback s in res)
+  A.loop state (\s => callback s)
 
 public export
 int : Parser Int
 int =
-  Mk $ A.int ExpectingInt ExpectingInt
+  A.int ExpectingInt ExpectingInt
 
 public export
 float : Parser Double
 float =
-  Mk $ A.float ExpectingDouble ExpectingDouble
+  A.float ExpectingDouble ExpectingDouble
 
 
 public export
@@ -170,8 +152,8 @@ fromMaybe x (Just y) = Right y
 
 public export
 number : Number a -> Parser a
-number i =
-  Mk $ A.number $ MkNumber
+number i = ?number_rhs
+  A.number
     (fromMaybe ExpectingInt i.int)
     (fromMaybe ExpectingHex i.hex)
     (fromMaybe ExpectingOctal i.octal)
@@ -183,82 +165,82 @@ number i =
 public export
 symbol : String -> Parser ()
 symbol str =
-  Mk $ A.symbol (A.MkToken str (ExpectingSymbol str))
+  A.symbol (A.MkToken str (ExpectingSymbol str))
 
 public export
 keyword : String -> Parser ()
 keyword kwd =
-  Mk $ A.keyword (A.MkToken kwd (ExpectingKeyword kwd))
+  A.keyword (A.MkToken kwd (ExpectingKeyword kwd))
 
 public export
 end : Parser ()
 end =
-  Mk $ A.end ExpectingEnd
+  A.end ExpectingEnd
 
 public export
 getChompedString : Parser a -> Parser String
-getChompedString (Mk p)=
-  Mk $ A.getChompedString p
+getChompedString =
+  A.getChompedString
 
 public export
 mapChompedString : (String -> a -> b) -> Parser a -> Parser b
-mapChompedString f (Mk p) =
-  Mk $ A.mapChompedString f p
+mapChompedString =
+  A.mapChompedString
 
 public export
 chompIf : (Char -> Bool) -> Parser ()
 chompIf isGood =
-  Mk $ A.chompIf isGood UnexpectedChar
+  A.chompIf isGood UnexpectedChar
 
 public export
 chompWhile : (Char -> Bool) -> Parser ()
-chompWhile f =
-  Mk $ A.chompWhile f
+chompWhile =
+  A.chompWhile
 
 public export
 chompUntil : String -> Parser ()
 chompUntil str =
-  Mk $ A.chompUntil (toToken str)
+  A.chompUntil (toToken str)
 
 public export
 chompUntilEndOr : String -> Parser ()
-chompUntilEndOr x =
-  Mk $ A.chompUntilEndOr x
+chompUntilEndOr =
+  A.chompUntilEndOr
 
 public export
 withIndent : Nat -> Parser a -> Parser a
-withIndent n (Mk p) =
-  Mk $ A.withIndent n p
+withIndent =
+  A.withIndent
 
 public export
 getIndent : Parser Nat
 getIndent =
-  Mk $ A.getIndent
+  A.getIndent
 
 public export
 getPosition : Parser (Nat, Nat)
 getPosition =
-  Mk A.getPosition
+  A.getPosition
 
 public export
 getRow : Parser Nat
 getRow =
-  Mk A.getRow
+  A.getRow
 
 public export
 getCol : Parser Nat
 getCol =
-  Mk A.getCol
+  A.getCol
 
 public export
 getOffset : Parser Int
 getOffset =
-  Mk A.getOffset
+  A.getOffset
 
 public export
 getSource : Parser String
 getSource =
-  Mk A.getSource
+  A.getSource
 
 public export
 record Variable where
@@ -269,7 +251,7 @@ record Variable where
 
 public export
 variable : Variable -> Parser String
-variable i = Mk $
+variable i =
   A.variable $
     A.MkVariable
       i.start
@@ -290,27 +272,27 @@ record Sequence a where
 
 public export
 sequence : Sequence a -> Parser (List a)
-sequence (MkSequence start separator end (Mk spaces) (Mk item) trailing) =
-  Mk $ A.sequence $
+sequence i =
+  A.sequence $
    A.MkSequence
-    (toToken start)
-    (toToken separator)
-    (toToken end)
-    spaces
-    item
-    trailing
+    (toToken i.start)
+    (toToken i.separator)
+    (toToken i.end)
+    i.spaces
+    i.item
+    i.trailing
 
 public export
 spaces : Parser ()
 spaces =
-  Mk A.spaces
+  A.spaces
 
 public export
 lineComment : String -> Parser ()
 lineComment str =
-  Mk $ A.lineComment (toToken str)
+  A.lineComment (toToken str)
 
 public export
 multiComment : String -> String -> Nestable -> Parser ()
 multiComment opn clse nstable =
-  Mk $ A.multiComment (toToken opn) (toToken clse) nstable
+  A.multiComment (toToken opn) (toToken clse) nstable
