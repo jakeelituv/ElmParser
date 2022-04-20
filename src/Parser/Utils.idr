@@ -1,6 +1,9 @@
 module Parser.Utils
 import Data.List
 
+public export
+data Trailing = Forbidden | Optional | Mandatory
+
 isSubStringHelp : (smallString : List Char) -> (offset : Int) -> (row : Nat) ->
                   (col : Nat) -> (bigString : List Char) -> (Int, Nat, Nat)
 isSubStringHelp [] offset row col bigString = (offset, row, col)

@@ -1,47 +1,49 @@
 module Pratt
 
+import Parser.Advanced
 import Parser
 import Pratt.Advanced as Advanced
+import public Pratt.Config
 
 public export
 Config : Type -> Type
-Config expr =  Advanced.Config Void Problem expr
+Config expr =  Config Void Problem expr
 
 public export
 expression : Config expr -> Parser expr
-expression = Advanced.expression
+expression config = Mk $ Advanced.expression config
 
 public export
 subExpression : Int -> Config expr -> Parser expr
-subExpression =
-    Advanced.subExpression
+subExpression n config =
+    Mk $ Advanced.subExpression n config
 
 public export
 literal : Parser expr -> Config expr -> Parser expr
-literal =
-    Advanced.literal
+literal (Mk p) config =
+    Mk $ Advanced.literal p config
 
 public export
 constant : Parser () -> expr -> Config expr -> Parser expr
-constant =
-    Advanced.constant
+constant (Mk p) x config =
+    Mk $ Advanced.constant p x config
 
 public export
 prefix' : Int -> Parser () -> (expr -> expr) -> Config expr -> Parser expr
-prefix' =
-    Advanced.prefix'
+prefix' n (Mk p) f config =
+    Mk $ Advanced.prefix' n p f config
 
 public export
 infixLeft : Int -> Parser () -> (expr -> expr -> expr) -> Config expr -> ( Int, expr -> Parser expr )
-infixLeft =
-    Advanced.infixLeft
+infixLeft n (Mk p) f config =
+    let (num, g) = Advanced.infixLeft n p f config in (num, \x => Mk $ g x)
 
 public export
 infixRight : Int -> Parser () -> (expr -> expr -> expr) -> Config expr -> ( Int, expr -> Parser expr )
-infixRight =
-    Advanced.infixRight
+infixRight n (Mk p) f config =
+    (let (num, g) = Advanced.infixRight n p f config in (num, \x => Mk $ g x))
 
 public export
 postfix : Int -> Parser () -> (expr -> expr) -> Config expr -> ( Int, expr -> Parser expr )
-postfix =
-  Advanced.postfix
+postfix n (Mk p) f config =
+  let (num, g) = Advanced.postfix n p f config in (num, \x => Mk $ g x)

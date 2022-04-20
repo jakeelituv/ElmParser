@@ -5,7 +5,7 @@ import Data.List
 import Control.Monad.State
 import Decidable.Equality
 import Data.Vect
-import Parser.Utils
+import public Parser.Utils
 
 infixl 0 |>
 infixl 5 |=
@@ -162,6 +162,7 @@ lazy : (() -> Parser c x a) -> Parser c x a
 lazy thunk = MkParser $ \s =>
             let MkParser parse = thunk () in
             parse s
+
 
 oneOfHelp : ParserState c -> Bag c x -> List (Parser c x a) -> PStep c x a
 oneOfHelp s0 bag [] = Bad False bag
@@ -479,8 +480,6 @@ varHelp isGood offset row col src indent context =
  else
    varHelp isGood newOffset row (col + 1) src indent context
 
-public export
-data Trailing = Forbidden | Optional | Mandatory
 
 public export
 record Sequence c x a where
