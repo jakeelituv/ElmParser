@@ -2,7 +2,7 @@ module Pratt.Advanced
 
 import public Pratt.Config
 import Parser.Advanced
-
+import Parser.Utils
 
 filter : ( Int, e -> Parser c x e ) -> Int -> e -> Maybe (Parser c x e)
 filter ( precedence, parser ) currentPrecedence leftExpression =
