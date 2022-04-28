@@ -48,10 +48,25 @@ run parser source
       (Left problems) => Left (map problemToDeadEnd problems)
       (Right x) => Right x
 
-public export
-deadEndsToString : List DeadEnd -> String
-deadEndsToString deadEnds =
-  "TODO deadEndsToString"
+Show Problem where
+  show (Expecting x) = "Expecting " ++ x
+  show ExpectingInt = "Expecting an Int"
+  show ExpectingHex = "Expecting a Hex"
+  show ExpectingOctal = "Expecting an Octal"
+  show ExpectingBinary = "Expecting a Binary"
+  show ExpectingDouble = "Expecting a Double"
+  show ExpectingNumber = "Expecting a number"
+  show ExpectingVariable = "Expecting a variable"
+  show (ExpectingSymbol x) = "Expecting a symbol " ++ x
+  show (ExpectingKeyword x) = "Expecting the keyword " ++ x
+  show ExpectingEnd = "Expecting the end"
+  show UnexpectedChar = "Expecting a Char"
+  show (MkProblem x) = "Problem " ++ x
+  show BadRepeat = "Bad repeat"
+
+Show DeadEnd where
+  show (MkDeadEnd row col problem) = show problem ++ " at row: " ++
+                                      show row ++ ", col: " ++ show col
 
 public export
 succeed : a -> Parser a

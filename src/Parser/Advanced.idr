@@ -7,6 +7,7 @@ import Decidable.Equality
 import Data.Vect
 import Parser.Utils
 
+
 infixl 0 |>
 infixl 5 |=
 infixr 6 |.
@@ -494,6 +495,77 @@ sequence i =
  skip (token i.start) $
  skip i.spaces $
    sequenceEnd (token i.end) i.spaces i.item (token i.separator) i.trailing
+
+-- sequenceEndForbiddenSnoc : Parser c x () -> Parser c x () -> Parser c x a -> Parser c x () -> SnocList a -> Parser c x (Step (SnocList a) (SnocList a))
+-- sequenceEndForbiddenSnoc ender ws parseItem sep revItems =
+--  let
+--    chompRest = \item =>
+--      sequenceEndForbiddenSnoc ender ws parseItem sep (revItems :< item)
+--  in
+--  skip ws $
+--    oneOf [ skip sep $ skip ws $ map (\item => Loop (revItems :< item)) parseItem
+--      , ender |> map (\_ => Done (reverse revItems))]
+--
+--
+-- sequenceEndOptionalSnoc : Parser c x () -> Parser c x () -> Parser c x a -> Parser c x () -> SnocList a -> Parser c x (Step (SnocList a) (SnocList a))
+-- sequenceEndOptionalSnoc ender ws parseItem sep revItems =
+--  let
+--    parseEnd =
+--      map (\_ => Done (reverse revItems)) ender
+--  in
+--  skip ws $
+--    oneOf
+--      [ skip sep $ skip ws $
+--          oneOf
+--            [ parseItem |> map (\item => Loop (revItems :< item))
+--            , parseEnd
+--            ]
+--      , parseEnd
+--      ]
+--
+--
+-- sequenceEndMandatorySnoc : Parser c x () -> Parser c x a -> Parser c x () -> SnocList a -> Parser c x (Step (SnocList a) (SnocList a))
+-- sequenceEndMandatorySnoc ws parseItem sep revItems =
+--  oneOf
+--    [ map (\item => Loop (revItems :< item)) $
+--       parseItem
+--       |. ws
+--       |. sep
+--       |. ws
+--    , map (\_ => Done (reverse revItems)) (succeed ())
+--    ]
+--
+-- sequenceEndSnoc : Parser c x () -> Parser c x () -> Parser c x a -> Parser c x () -> Trailing -> Parser c x (SnocList a)
+-- sequenceEndSnoc ender ws parseItem sep trailing =
+--  oneOf
+--    [ parseItem >>= chompRest trailing ender ws parseItem sep
+--    , ender |> map (\_ => [])
+--    ] where
+--  chompRest : Trailing -> Parser c x () -> Parser c x () -> Parser c x a -> Parser c x () -> a -> Parser c x (SnocList a)
+--  chompRest trailing ender ws parseItem sep item =
+--    case trailing of
+--      Forbidden =>
+--        loop [item] (sequenceEndForbiddenSnoc ender ws parseItem sep)
+--
+--      Optional =>
+--        loop [item] (sequenceEndOptionalSnoc ender ws parseItem sep)
+--
+--      Mandatory =>
+--          ( skip ws $ skip sep $ skip ws $
+--              loop [item] (sequenceEndMandatorySnoc ws parseItem sep)
+--          )
+--          |. ender
+--
+--
+-- public export
+-- sequenceSnoc : Sequence c x a -> Parser c x (SnocList a)
+-- sequenceSnoc i =
+-- skip (token i.start) $
+-- skip i.spaces $
+--   sequenceEndSnoc (token i.end) i.spaces i.item (token i.separator) i.trailing
+--
+--
+
 
 public export
 variable : Variable x -> Parser c x String
