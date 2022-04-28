@@ -48,6 +48,7 @@ run parser source
       (Left problems) => Left (map problemToDeadEnd problems)
       (Right x) => Right x
 
+public export
 Show Problem where
   show (Expecting x) = "Expecting " ++ x
   show ExpectingInt = "Expecting an Int"
@@ -64,6 +65,7 @@ Show Problem where
   show (MkProblem x) = "Problem " ++ x
   show BadRepeat = "Bad repeat"
 
+public export
 Show DeadEnd where
   show (MkDeadEnd row col problem) = show problem ++ " at row: " ++
                                       show row ++ ", col: " ++ show col
