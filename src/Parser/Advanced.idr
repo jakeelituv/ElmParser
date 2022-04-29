@@ -165,7 +165,7 @@ keyword (MkToken kwd expecting) =
   let (newOffset, newRow, newCol) =
         isSubString kwd s.offset s.row s.col s.src
   in
-  if newOffset == -1 || 0 <= isSubChar (\c => isAlphaNum c || c == '_') newOffset s.src then
+  if newOffset == -1 || 0 <= isSubChar (\c => not (c == ' ' || c == '\n' || c == '\r')) newOffset s.src then
     Bad False (fromState s expecting)
   else
     Good progress () $
