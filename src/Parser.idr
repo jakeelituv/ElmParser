@@ -281,7 +281,7 @@ public export
 record Sequence a where
   constructor MkSequence
   start : String
-  separator : String
+  separator : Parser ()
   end : String
   spaces : Parser ()
   item : Parser a
@@ -293,7 +293,7 @@ sequence i =
   A.sequence $
    A.MkSequence
     (toToken i.start)
-    (toToken i.separator)
+    i.separator
     (toToken i.end)
     i.spaces
     i.item

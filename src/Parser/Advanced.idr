@@ -406,7 +406,7 @@ public export
 record Sequence c x a where
   constructor MkSequence
   start : Token x
-  separator : Token x
+  separator : Parser c x ()
   end : Token x
   spaces : Parser c x ()
   item : Parser c x a
@@ -494,7 +494,7 @@ sequence : Sequence c x a -> Parser c x (List a)
 sequence i =
  skip (token i.start) $
  skip i.spaces $
-   sequenceEnd (token i.end) i.spaces i.item (token i.separator) i.trailing
+   sequenceEnd (token i.end) i.spaces i.item i.separator i.trailing
 
 -- sequenceEndForbiddenSnoc : Parser c x () -> Parser c x () -> Parser c x a -> Parser c x () -> SnocList a -> Parser c x (Step (SnocList a) (SnocList a))
 -- sequenceEndForbiddenSnoc ender ws parseItem sep revItems =
