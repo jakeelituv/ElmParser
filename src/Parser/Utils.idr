@@ -5,6 +5,10 @@ import Data.List
 public export
 data Trailing = Forbidden | Optional | Mandatory
 
+public export
+data Step parserState a =
+    Loop parserState
+  | Done a
 
 public export
 record Located ctx where

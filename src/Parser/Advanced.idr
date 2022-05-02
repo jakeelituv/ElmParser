@@ -99,11 +99,6 @@ oneOf : List (Parser c x a) -> Parser c x a
 oneOf parsers =
   MkParser $ \s => oneOfHelp s Empty parsers
 
-public export
-data Step parserState a =
-    Loop parserState
-  | Done a
-
 loopHelp : Bool -> parserState -> (parserState -> Parser c x (Step parserState a)) -> ParserState c -> PStep c x a
 loopHelp p parserState callback s0 =
     let MkParser parse = callback parserState in
