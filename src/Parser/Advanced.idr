@@ -5,7 +5,7 @@ import Data.List
 import Control.Monad.State
 import Decidable.Equality
 import Data.Vect
-import Parser.Utils
+import public Parser.Utils
 
 
 infixl 0 |>
