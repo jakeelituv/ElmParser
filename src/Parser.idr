@@ -130,7 +130,7 @@ commit =
 public export
 toToken : String -> A.Token Problem
 toToken str =
-  A.MkToken str (Expecting str)
+  A.Tok str (Expecting str)
 
 public export
 token : String -> Parser ()
@@ -182,12 +182,12 @@ number i = ?number_rhs
 public export
 symbol : String -> Parser ()
 symbol str =
-  A.symbol (A.MkToken str (ExpectingSymbol str))
+  A.symbol (A.Tok str (ExpectingSymbol str))
 
 public export
 keyword : String -> Parser ()
 keyword kwd =
-  A.keyword (A.MkToken kwd (ExpectingKeyword kwd))
+  A.keyword (A.Tok kwd (ExpectingKeyword kwd))
 
 public export
 end : Parser ()

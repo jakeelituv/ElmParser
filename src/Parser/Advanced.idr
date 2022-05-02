@@ -129,12 +129,12 @@ commit a =
 
 public export
 data Token : (x : Type) -> Type where
-  MkToken : (str : String) -> (expecting : x) -> Token x
+  Tok : (str : String) -> (expecting : x) -> Token x
 
 
 public export
 token : Token x -> Parser c x ()
-token (MkToken str expecting) =
+token (Tok str expecting) =
     let progress = not $ str == "" in
       MkParser $ \s =>
     let (newOffset, newRow, newCol) =
@@ -154,7 +154,7 @@ token (MkToken str expecting) =
 
 public export
 keyword : Token x -> Parser c x ()
-keyword (MkToken kwd expecting) =
+keyword (Tok kwd expecting) =
   let progress = not $ kwd == "" in
     MkParser $ \s =>
   let (newOffset, newRow, newCol) =
@@ -259,7 +259,7 @@ chompWhile isGood =
 
 public export
 chompUntil : Token x -> Parser c x ()
-chompUntil (MkToken str expecting) =
+chompUntil (Tok str expecting) =
   MkParser $ \s =>
     let
       (newOffset, newRow, newCol) =
@@ -619,7 +619,7 @@ nestableHelp isNotRelevant opn cls expectingClose nestLevel =
           ]
 
 nestableComment : Token x -> Token x -> Parser c x ()
-nestableComment opn @ (MkToken oStr oX) cls @ (MkToken cStr cX) =
+nestableComment opn @ (Tok oStr oX) cls @ (Tok cStr cX) =
   case unpack oStr of
     [] => problem oX
     (openChar :: _) =>
