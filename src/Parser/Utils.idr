@@ -13,8 +13,8 @@ data Step parserState a =
 public export
 record Located ctx where
   constructor MkLocated
-  row : Nat
-  col : Nat
+  row : Int
+  col : Int
   context : ctx
 %name Located located
 
@@ -23,17 +23,17 @@ record ParserState ctx where
   constructor MkParserState
   src : String
   offset : Int
-  indent : Nat
+  indent : Int
   context : List (Located ctx)
-  row : Nat
-  col : Nat
+  row : Int
+  col : Int
 %name ParserState pstate
 
 public export
 record DeadEnd ctx problem' where
   constructor MkDeadEnd
-  row : Nat
-  col : Nat
+  row : Int
+  col : Int
   problem : problem'
   contextStack : List (Located ctx)
 %name DeadEnd deadend
@@ -95,15 +95,15 @@ Monad (Parser c x) where
 
 
 
-isSubStringHelp : (smallString : List Char) -> (offset : Int) -> (row : Nat) ->
-                  (col : Nat) -> (bigString : List Char) -> (Int, Nat, Nat)
+isSubStringHelp : (smallString : List Char) -> (offset : Int) -> (row : Int) ->
+                  (col : Int) -> (bigString : List Char) -> (Int, Int, Int)
 isSubStringHelp [] offset row col bigString = (offset, row, col)
 isSubStringHelp (x :: xs) offset row col (y :: ys) =
   if x == y then
     if isNL x then
-      isSubStringHelp xs (offset + 1) (S row) 1 ys
+      isSubStringHelp xs (offset + 1) (row + 1) 1 ys
     else
-      isSubStringHelp xs (offset + 1) row (S col) ys
+      isSubStringHelp xs (offset + 1) row (col + 1) ys
   else
     (-1, row, col)
 isSubStringHelp (x :: xs) offset row col [] = (-1, row, col)
@@ -120,8 +120,8 @@ drop n list =
         drop (n-1) xs
 
 public export
-isSubString : (smallString : String) -> (offset : Int) -> (row : Nat) ->
-                  (col : Nat) -> (bigString : String) -> (Int, Nat, Nat)
+isSubString : (smallString : String) -> (offset : Int) -> (row : Int) ->
+                  (col : Int) -> (bigString : String) -> (Int, Int, Int)
 isSubString smallString offset row col bigString =
     if offset + cast (length smallString) <= cast (length bigString) then
       isSubStringHelp (unpack smallString) offset row col
@@ -145,7 +145,7 @@ indexOfHelp : (i : Int) -> (smallString : List Char) -> (bigString : List Char) 
 indexOfHelp i smallString [] = -1
 indexOfHelp i smallString (x :: xs) =
   if isPrefixOf smallString (x :: xs) then
-      cast i
+      i
   else indexOfHelp (i + 1) smallString xs
 
 
@@ -154,8 +154,8 @@ indexOf smallString bigString offset = indexOfHelp offset (unpack smallString) (
 
 
 
-findSubStringHelp : (target : Int) -> (newOffset : Int) -> (offset : Int) -> (row : Nat) ->
-                  (col : Nat) -> (bigString : List Char) -> (Int, Nat, Nat)
+findSubStringHelp : (target : Int) -> (newOffset : Int) -> (offset : Int) -> (row : Int) ->
+                  (col : Int) -> (bigString : List Char) -> (Int, Int, Int)
 findSubStringHelp target newOffset offset row col [] = (newOffset, row, col)
 findSubStringHelp target newOffset offset row col (code :: xs) =
               if offset < target then
@@ -164,8 +164,8 @@ findSubStringHelp target newOffset offset row col (code :: xs) =
               else (newOffset, row, col)
 
 public export
-findSubString : (smallString : String) -> (offset : Int) -> (row : Nat) ->
-                  (col : Nat) -> (bigString : String) -> (Int, Nat, Nat)
+findSubString : (smallString : String) -> (offset : Int) -> (row : Int) ->
+                  (col : Int) -> (bigString : String) -> (Int, Int, Int)
 findSubString smallString offset row col bigString =
         let newOffset = indexOf smallString bigString offset
             target = if newOffset < 0 then cast (length bigString)

@@ -7,6 +7,7 @@ import Decidable.Equality
 import Data.Vect
 import public Parser.Utils
 
+%hide substr
 
 infixl 0 |>
 infixl 5 |=
@@ -18,9 +19,13 @@ public export
 (|>) x f = f x
 
 
-public export
-intToNat : Int -> Nat
-intToNat x = integerToNat (cast x)
+substr : (index : Int) -> (len : Int) -> (subject : String) -> String
+substr s e subj
+    = if s < cast (length subj)
+         then prim__strSubstr s
+                              e
+                              subj
+         else ""
 
 
 
@@ -51,7 +56,7 @@ fromState (MkParserState src offset indent context row col) z
   = AddRight Empty (MkDeadEnd row col z context)
 
 
-fromInfo : Nat -> Nat -> x -> List (Located c) -> Bag c x
+fromInfo : Int -> Int -> x -> List (Located c) -> Bag c x
 fromInfo row col x context = AddRight Empty (MkDeadEnd row col x context)
 
 
@@ -193,7 +198,7 @@ mapChompedString func (MkParser parse) =
       Bad p x =>
         Bad p x
       Good p a s1 =>
-        Good p (func (substr (intToNat s0.offset) (intToNat $ s1.offset - s0.offset) s0.src) a) s1
+        Good p (func (substr (s0.offset) ( s1.offset - s0.offset) s0.src) a) s1
 
 public export
 getChompedString : Parser c x a -> Parser c x String
@@ -226,7 +231,7 @@ chompIf isGood expecting =
           s.row --row
           (s.col + 1) --col
 
-chompWhileHelp : (Char -> Bool) -> Int -> Nat -> Nat -> ParserState c -> PStep c x ()
+chompWhileHelp : (Char -> Bool) -> Int -> Int -> Int -> ParserState c -> PStep c x ()
 chompWhileHelp isGood offst row col s0 =
   let
     newOffset = isSubChar isGood offst s0.src
@@ -321,12 +326,12 @@ inContext ctx (MkParser parse) =
         step
 
 public export
-getIndent : Parser c x Nat
+getIndent : Parser c x Int
 getIndent =
   MkParser $ \s => Good False s.indent s
 
 
-changeIndent : Nat -> ParserState c -> ParserState c
+changeIndent : Int -> ParserState c -> ParserState c
 changeIndent newIndent s =
   MkParserState
    s.src --src
@@ -337,7 +342,7 @@ changeIndent newIndent s =
    s.col --col
 
 public export
-withIndent : Nat -> Parser c x a -> Parser c x a
+withIndent : Int -> Parser c x a -> Parser c x a
 withIndent newIndent (MkParser parse) =
  MkParser $ \s0 =>
   let (MkParserState _ _ indent _ _ _) = s0 in
@@ -349,19 +354,19 @@ withIndent newIndent (MkParser parse) =
        Bad p x
 
 public export
-getPosition : Parser c x (Nat, Nat)
+getPosition : Parser c x (Int, Int)
 getPosition =
  MkParser $ \s => Good False (s.row, s.col) s
 
 
 public export
-getRow : Parser c x Nat
+getRow : Parser c x Int
 getRow =
  MkParser $ \s => Good False s.row s
 
 
 public export
-getCol : Parser c x Nat
+getCol : Parser c x Int
 getCol =
  MkParser $ \s => Good False s.col s
 
@@ -378,7 +383,7 @@ getSource =
  MkParser $ \s => Good False s.src s
 
 
-varHelp : (Char -> Bool) -> Int -> Nat -> Nat -> String -> Nat -> List (Located c) -> ParserState c
+varHelp : (Char -> Bool) -> Int -> Int -> Int -> String -> Int -> List (Located c) -> ParserState c
 varHelp isGood offset row col src indent context =
  let
    newOffset = isSubChar isGood offset src
@@ -581,7 +586,7 @@ variable i =
            varHelp i.inner firstOffset s.row (s.col + 1) s.src s.indent s.context
 
        name =
-         substr (intToNat s.offset) (intToNat $ s1.offset - s.offset) s.src
+         substr (s.offset) ( s1.offset - s.offset) s.src
      in
      if elem name i.reserved then
        Bad False (fromState s i.expecting)
@@ -647,7 +652,7 @@ bumpOffset newOffset (MkParserState src offset indent context row col) =
    indent --indent
    context --context
    row --row
-   (col + intToNat (newOffset - offset)) --col
+   (col + (newOffset - offset)) --col
 
 
 finalizeInt : x -> Either x (Int -> a) -> Int -> (Int, Int) -> ParserState c -> PStep c x a
@@ -694,7 +699,7 @@ finalizeFloat invalid expecting intSettings floatSettings intPair
     floatOffset = consumeDotAndExp intOffset src
   in
   if floatOffset < 0 then
-    Bad True (fromInfo row (intToNat (cast col - (floatOffset + offset))) invalid context)
+    Bad True (fromInfo row ((cast col - (floatOffset + offset))) invalid context)
 
   else if offset == floatOffset then
     Bad False (fromState s expecting)
@@ -708,7 +713,7 @@ finalizeFloat invalid expecting intSettings floatSettings intPair
         Bad True (fromState s invalid)
 
       Right toValue =>
-        case Data.String.parseDouble (substr (intToNat offset) (intToNat $ floatOffset - offset) src) of
+        case Data.String.parseDouble (substr (offset) ( floatOffset - offset) src) of
           Nothing => Bad True (fromState s invalid)
           Just n => Good True (toValue n) (bumpOffset floatOffset s)
 

@@ -32,8 +32,8 @@ Parser a = Parser Void Problem a
 public export
 record DeadEnd where
   constructor MkDeadEnd
-  row : Nat
-  col : Nat
+  row : Int
+  col : Int
   problem : Problem
 
 public export
@@ -225,27 +225,27 @@ chompUntilEndOr =
   A.chompUntilEndOr
 
 public export
-withIndent : Nat -> Parser a -> Parser a
+withIndent : Int -> Parser a -> Parser a
 withIndent =
   A.withIndent
 
 public export
-getIndent : Parser Nat
+getIndent : Parser Int
 getIndent =
   A.getIndent
 
 public export
-getPosition : Parser (Nat, Nat)
+getPosition : Parser (Int, Int)
 getPosition =
   A.getPosition
 
 public export
-getRow : Parser Nat
+getRow : Parser Int
 getRow =
   A.getRow
 
 public export
-getCol : Parser Nat
+getCol : Parser Int
 getCol =
   A.getCol
 
